@@ -1,0 +1,27 @@
+# Zephyr / West
+build/
+.west/
+modules/
+
+# Kconfig
+*.old
+*.orig
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Twister (test runner)
+twister-out/

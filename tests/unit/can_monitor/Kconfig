@@ -1,0 +1,5 @@
+mainmenu "CAN Monitor unit tests (default)"
+
+source "Kconfig.zephyr"
+
+rsource "../../../Kconfig.appsymbols"

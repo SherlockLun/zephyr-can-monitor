@@ -1,0 +1,24 @@
+sequenceDiagram
+    participant Bus as CAN Bus
+    participant ISR as CAN ISR
+    participant Q   as rx_msgq
+    participant T   as monitor_thread
+    participant SM  as dispatch()
+    participant Out as UART
+
+    Bus->>ISR: frame arrives
+    ISR->>Q: k_msgq_put()
+    Note over ISR,Q: ISR exits immediately
+
+    Q-->>T: k_msgq_get() unblocks
+    T->>SM: can_monitor_dispatch(&frame)
+
+    alt RX == CAN_ID_HELLO [CAN_ID_HELLO_ENABLED]
+        SM->>Out: printk("hello world")
+    else RX == CAN_ID_START, state IDLE [CAN_ID_START_ENABLED]
+        SM->>SM: state = LOGGING_ACTIVE
+    else RX == CAN_ID_STOP, state ACTIVE [CAN_ID_STOP_ENABLED]
+        SM->>SM: state = LOGGING_IDLE
+    else state == LOGGING_ACTIVE
+        SM->>Out: logger_print_frame()
+    end

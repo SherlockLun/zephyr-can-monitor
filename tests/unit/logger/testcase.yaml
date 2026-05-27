@@ -1,0 +1,12 @@
+tests:
+  logger.format:
+    tags: logger format uart
+    platform_allow:
+      - native_sim
+      - native_sim/native/64
+    timeout: 15
+    harness: ztest
+    harness_config:
+      type: one_line
+      regex:
+        - "PROJECT EXECUTION SUCCESSFUL"

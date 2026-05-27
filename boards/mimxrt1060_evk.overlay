@@ -1,0 +1,24 @@
+/ {
+	chosen {
+		zephyr,canbus = &flexcan1;
+	};
+};
+
+&pinctrl {
+	pinmux_flexcan1: pinmux_flexcan1 {
+		group0 {
+			pinmux = <&iomuxc_gpio_ad_b1_08_flexcan1_tx>,
+				 <&iomuxc_gpio_ad_b1_09_flexcan1_rx>;
+			drive-strength = "r0-6";
+			slew-rate = "slow";
+			nxp,speed = "100-mhz";
+		};
+	};
+};
+
+&flexcan1 {
+	status = "okay";
+	pinctrl-0 = <&pinmux_flexcan1>;
+	pinctrl-names = "default";
+	bus-speed = <500000>;
+};

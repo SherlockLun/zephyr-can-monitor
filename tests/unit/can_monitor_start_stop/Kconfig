@@ -1,0 +1,5 @@
+mainmenu "CAN Monitor unit tests (start/stop)"
+
+source "Kconfig.zephyr"
+
+rsource "../../../Kconfig.appsymbols"

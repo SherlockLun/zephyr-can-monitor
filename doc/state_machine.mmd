@@ -1,0 +1,16 @@
+stateDiagram-v2
+    direction LR
+
+    [*] --> LOGGING_ACTIVE : CAN_ID_START_ENABLED=n (default)
+    [*] --> LOGGING_IDLE   : CAN_ID_START_ENABLED=y
+
+    LOGGING_IDLE   --> LOGGING_ACTIVE : RX == CAN_ID_START\n[CAN_ID_START_ENABLED]
+    LOGGING_ACTIVE --> LOGGING_IDLE   : RX == CAN_ID_STOP\n[CAN_ID_STOP_ENABLED]
+
+    LOGGING_ACTIVE --> LOGGING_ACTIVE : any other frame / logger_print_frame()
+
+    note right of LOGGING_ACTIVE
+        CAN_ID_HELLO [CAN_ID_HELLO_ENABLED] triggers
+        printk("hello world") in both states.
+        The frame is not logged.
+    end note

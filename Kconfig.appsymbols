@@ -1,0 +1,109 @@
+# App-specific Kconfig symbols shared between the application and unit tests.
+# Sourced from the root Kconfig and from each test's Kconfig.
+
+menu "CAN Logger Configuration"
+
+config CAN_LOGGER_BITRATE
+	int "CAN bus bitrate (bps)"
+	default 500000
+	help
+	  CAN bus bitrate in bits per second.
+	  Common values: 125000, 250000, 500000, 1000000.
+
+config CAN_TX1_PERIOD_MS
+	int "TX message 1 period (ms)"
+	default 100
+	range 10 60000
+	help
+	  Transmit interval for TX message 1 in milliseconds.
+
+config CAN_TX2_PERIOD_MS
+	int "TX message 2 period (ms)"
+	default 500
+	range 10 60000
+	help
+	  Transmit interval for TX message 2 in milliseconds.
+
+config CAN_TX3_PERIOD_MS
+	int "TX message 3 period (ms)"
+	default 1000
+	range 10 60000
+	help
+	  Transmit interval for TX message 3 in milliseconds.
+
+config CAN_TX1_ID
+	hex "TX message 1 CAN ID (11-bit)"
+	default 0x101
+	range 0x001 0x7FF
+	help
+	  11-bit CAN ID used for the first periodic TX message.
+
+config CAN_TX2_ID
+	hex "TX message 2 CAN ID (11-bit)"
+	default 0x102
+	range 0x001 0x7FF
+	help
+	  11-bit CAN ID used for the second periodic TX message.
+
+config CAN_TX3_ID
+	hex "TX message 3 CAN ID (11-bit)"
+	default 0x103
+	range 0x001 0x7FF
+	help
+	  11-bit CAN ID used for the third periodic TX message.
+
+config CAN_ID_START_ENABLED
+	bool "Enable start logging RX ID"
+	default n
+	help
+	  When enabled, logging does not begin until a CAN frame with
+	  CAN_ID_START is received. When disabled, logging starts immediately.
+
+config CAN_ID_START
+	hex "RX CAN ID to start logging"
+	depends on CAN_ID_START_ENABLED
+	default 0x200
+	range 0x001 0x7FF
+	help
+	  Receiving a frame with this ID transitions the logger from IDLE to
+	  ACTIVE. Only meaningful when CAN_ID_START_ENABLED=y.
+
+config CAN_ID_STOP_ENABLED
+	bool "Enable stop logging RX ID"
+	default n
+	help
+	  When enabled, a CAN frame with CAN_ID_STOP stops logging.
+	  When disabled, logging continues indefinitely.
+
+config CAN_ID_STOP
+	hex "RX CAN ID to stop logging"
+	depends on CAN_ID_STOP_ENABLED
+	default 0x201
+	range 0x001 0x7FF
+	help
+	  Receiving a frame with this ID transitions the logger from ACTIVE to
+	  IDLE. Only meaningful when CAN_ID_STOP_ENABLED=y.
+
+config CAN_ID_HELLO_ENABLED
+	bool "Enable 'hello specialized' RX ID"
+	default n
+	help
+	  When enabled, receiving a frame with CAN_ID_HELLO prints the string
+	  "hello specialized" over UART regardless of the current logging state.
+
+config CAN_ID_HELLO
+	hex "RX CAN ID to print 'hello specialized'"
+	depends on CAN_ID_HELLO_ENABLED
+	default 0x202
+	range 0x001 0x7FF
+	help
+	  Receiving a frame with this ID prints "hello specialized" to UART.
+
+endmenu
+
+config CAN_LOOPBACK_MODE
+	bool "Start CAN controller in loopback mode"
+	default n
+	help
+	  Use CAN_MODE_LOOPBACK instead of CAN_MODE_NORMAL.
+	  Required for zephyr,can-loopback (native_sim testing).

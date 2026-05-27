@@ -1,0 +1,18 @@
+manifest:
+  version: "1.2"
+
+  remotes:
+    - name: zephyrproject-rtos
+      url-base: https://github.com/zephyrproject-rtos
+
+  defaults:
+    remote: zephyrproject-rtos
+    revision: v3.7.0
+
+  projects:
+    - name: zephyr
+      path: deps/zephyr
+      import: true
+
+  self:
+    path: .          # T2 topology
