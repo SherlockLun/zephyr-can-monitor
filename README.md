@@ -11,10 +11,10 @@ control.  Includes unit tests runnable on the host without any hardware.
 - Receives CAN frames and prints them to UART with **timestamp, ID, DLC and data**
 - **Three TX messages** sent at configurable intervals with randomly generated payloads
 - **Optional start/stop** control via configurable RX message IDs
-- **Optional "hello specialized"** trigger via a configurable RX message ID
+- **Optional "hello world"** trigger via a configurable RX message ID
 - All parameters (bitrate, IDs, periods) set **at build time via Kconfig** — no
   runtime configuration needed
-- Unit tests for state machine and output formatter, runnable on `native_sim`
+- Unit tests for state machine, output formatter and TX behavior, runnable on `native_sim`
 
 ---
 
@@ -37,66 +37,13 @@ zephyr-can-monitor/
 │   ├── can_monitor.c/h    # RX state machine (IDLE↔ACTIVE), ISR→msgq→thread
 │   ├── can_tx.c/h         # Three periodic TX threads with random payloads
 │   └── logger.c/h         # UART formatter: timestamp · ID · DLC · data bytes
-├── tests/
-│   └── unit/
-│       ├── can_monitor/         # State machine tests (no optional IDs)
-│       ├── can_monitor_start_stop/  # State machine tests (all IDs enabled)
-│       └── logger/              # Output format tests (no hardware needed)
-└── doc/
-    ├── state_machine.mmd  # Logging state machine (Mermaid)
-    └── sequence.mmd       # CAN ISR → thread → UART sequence (Mermaid)
+└── tests/
+    └── unit/
+        ├── can_monitor/             # State machine tests (no optional IDs)
+        ├── can_monitor_start_stop/  # State machine tests (all IDs enabled)
+        ├── logger/                  # Output format tests (no hardware needed)
+        └── can_tx/                  # Periodic TX tests (ID, DLC, random payload)
 ```
-
----
-
-## Architecture
-
-### Component overview
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  main.c          can_monitor          can_tx         logger     │
-│    │                  │                  │              │        │
-│    ├─init()──────────►│              ┌───┤              │        │
-│    └─init()────────────────────────►│   │              │        │
-│                       │             │tx1│ k_sleep(T1)  │        │
-│  CAN Driver           │             │tx2│ k_sleep(T2)  │        │
-│    │ ISR callback      │             │tx3│ k_sleep(T3)  │        │
-│    └──k_msgq_put()───►│rx_msgq       └───┘              │        │
-│                       │ monitor_thread                   │        │
-│                       └──dispatch()──────────────────►  │        │
-│                                             logger_print_frame()│
-│                                                  printk() → UART│
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### Logging state machine
-
-```mermaid
-stateDiagram-v2
-    [*] --> LOGGING_ACTIVE : CAN_ID_START_ENABLED = n (default)
-    [*] --> LOGGING_IDLE   : CAN_ID_START_ENABLED = y
-
-    LOGGING_IDLE   --> LOGGING_ACTIVE : RX == CAN_ID_START
-    LOGGING_ACTIVE --> LOGGING_IDLE   : RX == CAN_ID_STOP
-
-    LOGGING_ACTIVE --> LOGGING_ACTIVE : any frame → logger_print_frame()
-    LOGGING_IDLE   --> LOGGING_IDLE   : RX == CAN_ID_HELLO → "hello specialized"
-    LOGGING_ACTIVE --> LOGGING_ACTIVE : RX == CAN_ID_HELLO → "hello specialized"
-```
-
-> HELLO trigger works in both states.  
-> All transitions guarded by the respective `CAN_ID_*_ENABLED` Kconfig.
-
----
-
-## Requirements
-
-- [Zephyr RTOS](https://docs.zephyrproject.org) v3.7 (declared in `west.yml`)
-- `west` build tool
-- Board with CAN peripheral — **NXP MIMXRT1060-EVK** recommended  
-  (also works with FRDM-K64F; add external CAN transceiver for that board)
-- External CAN transceiver (e.g. TJA1051) wired to the MCU's CAN pins
 
 ---
 
@@ -146,31 +93,31 @@ timeout 5 ./build/native_sim/zephyr/zephyr.exe 2>&1 | tee app.log
 
 ## Kconfig reference
 
-| Option                   | Description                              | Default     |
-|--------------------------|------------------------------------------|-------------|
-| `CAN_LOGGER_BITRATE`     | CAN bus bitrate (bps)                    | `500000`    |
-| `CAN_TX1_PERIOD_MS`      | TX message 1 interval (ms)               | `100`       |
-| `CAN_TX2_PERIOD_MS`      | TX message 2 interval (ms)               | `500`       |
-| `CAN_TX3_PERIOD_MS`      | TX message 3 interval (ms)               | `1000`      |
-| `CAN_TX1_ID`             | TX message 1 CAN ID                      | `0x101`     |
-| `CAN_TX2_ID`             | TX message 2 CAN ID                      | `0x102`     |
-| `CAN_TX3_ID`             | TX message 3 CAN ID                      | `0x103`     |
-| `CAN_ID_START_ENABLED`   | Enable start-logging trigger             | `n`         |
-| `CAN_ID_START`           | RX ID to start logging                   | `0x200`     |
-| `CAN_ID_STOP_ENABLED`    | Enable stop-logging trigger              | `n`         |
-| `CAN_ID_STOP`            | RX ID to stop logging                    | `0x201`     |
-| `CAN_ID_HELLO_ENABLED`   | Enable "hello specialized" trigger       | `n`         |
-| `CAN_ID_HELLO`           | RX ID to print "hello specialized"       | `0x202`     |
+| Option                   | Description                        | Default     |
+|--------------------------|------------------------------------|-------------|
+| `CAN_LOGGER_BITRATE`     | CAN bus bitrate (bps)              | `500000`    |
+| `CAN_TX1_PERIOD_MS`      | TX message 1 interval (ms)         | `100`       |
+| `CAN_TX2_PERIOD_MS`      | TX message 2 interval (ms)         | `500`       |
+| `CAN_TX3_PERIOD_MS`      | TX message 3 interval (ms)         | `1000`      |
+| `CAN_TX1_ID`             | TX message 1 CAN ID                | `0x101`     |
+| `CAN_TX2_ID`             | TX message 2 CAN ID                | `0x102`     |
+| `CAN_TX3_ID`             | TX message 3 CAN ID                | `0x103`     |
+| `CAN_ID_START_ENABLED`   | Enable start-logging trigger       | `n`         |
+| `CAN_ID_START`           | RX ID to start logging             | `0x200`     |
+| `CAN_ID_STOP_ENABLED`    | Enable stop-logging trigger        | `n`         |
+| `CAN_ID_STOP`            | RX ID to stop logging              | `0x201`     |
+| `CAN_ID_HELLO_ENABLED`   | Enable "hello world" trigger       | `n`         |
+| `CAN_ID_HELLO`           | RX ID to print "hello world"       | `0x202`     |
 
 ---
 
 ## Output format
 
 ```
-[1234567] ID:0x1A2 DLC:8 Data:DE AD BE EF 00 11 22 33
+[1234567] ID=0x1A2 DLC=8 DATA=DE AD BE EF 00 11 22 33
 ```
 
-Fields: `[uptime_ms] ID:0x<id> DLC:<n> Data:<hex bytes separated by spaces>`
+Fields: `[uptime_ms] ID=0x<id> DLC=<n> DATA=<hex bytes separated by spaces>`
 
 ---
 
@@ -187,6 +134,7 @@ west twister -T apps/zephyr-can-monitor/tests -p native_sim --inline-logs
 | `can_monitor.default`      | Initial state ACTIVE, frame counting, reset        |
 | `can_monitor.start_stop`   | IDLE↔ACTIVE transitions, hello trigger, full cycle |
 | `logger.format`            | Timestamp, ID, DLC, data bytes, buffer safety      |
+| `can_tx.periodic`          | Correct IDs, DLC=8, random payload per TX thread   |
 
 Run a single suite:
 
@@ -199,22 +147,3 @@ Build-only check (no execution):
 ```bash
 west twister -T apps/zephyr-can-monitor/tests -p native_sim --build-only
 ```
-
----
-
-## Diagrams
-
-Mermaid source files are in [doc/](doc/).  
-Render with the [Mermaid VS Code extension](https://marketplace.visualstudio.com/items?itemName=bierner.markdown-mermaid)
-or the CLI:
-
-```bash
-mmdc -i doc/state_machine.mmd -o doc/state_machine.svg
-mmdc -i doc/sequence.mmd      -o doc/sequence.svg
-```
-
----
-
-## License
-
-MIT

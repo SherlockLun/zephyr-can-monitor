@@ -1,0 +1,5 @@
+mainmenu "CAN TX unit tests"
+
+source "Kconfig.zephyr"
+
+rsource "../../../Kconfig.appsymbols"

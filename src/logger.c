@@ -20,7 +20,7 @@ int logger_format_frame(char *buf, size_t buf_len,
 
 	/* Timestamp and header */
 	ret = snprintf(buf + pos, buf_len - pos,
-		       "[%lld] ID:0x%03X DLC:%d Data:",
+		       "[%lld] ID=0x%03X DLC=%d DATA=",
 		       (long long)ts_ms, frame->id, frame->dlc);
 	if (ret < 0 || (size_t)ret >= buf_len - pos) {
 		return ret;

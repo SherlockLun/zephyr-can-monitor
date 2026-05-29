@@ -1,0 +1,12 @@
+tests:
+  can_tx.periodic:
+    tags: can tx periodic
+    platform_allow:
+      - native_sim
+      - native_sim/native/64
+    timeout: 30
+    harness: ztest
+    harness_config:
+      type: one_line
+      regex:
+        - "PROJECT EXECUTION SUCCESSFUL"

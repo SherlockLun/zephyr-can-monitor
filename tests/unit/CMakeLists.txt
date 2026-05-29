@@ -1,3 +1,4 @@
 add_subdirectory(can_monitor)
 add_subdirectory(can_monitor_start_stop)
 add_subdirectory(logger)
+add_subdirectory(can_tx)

@@ -6,15 +6,11 @@
 
 static const struct device *g_can_dev;
 
+#define TX_STACK_SIZE 1024
+
 static struct k_thread tx_thread_data[3];
 
-K_THREAD_STACK_DEFINE(tx1_stack, 1024);
-K_THREAD_STACK_DEFINE(tx2_stack, 1024);
-K_THREAD_STACK_DEFINE(tx3_stack, 1024);
-
-static k_thread_stack_t *const tx_stacks[3] = {
-	tx1_stack, tx2_stack, tx3_stack,
-};
+K_THREAD_STACK_ARRAY_DEFINE(tx_stacks, 3, TX_STACK_SIZE);
 
 struct tx_cfg {
 	uint32_t id;
@@ -64,7 +60,7 @@ void can_tx_init(const struct device *can_dev)
 
 	for (int i = 0; i < 3; i++) {
 		k_thread_create(&tx_thread_data[i], tx_stacks[i],
-				K_THREAD_STACK_SIZEOF(tx1_stack),
+				TX_STACK_SIZE,
 				tx_entry, (void *)&tx_cfgs[i], NULL, NULL,
 				7, 0, K_NO_WAIT);
 		k_thread_name_set(&tx_thread_data[i], i == 0 ? "can_tx1"

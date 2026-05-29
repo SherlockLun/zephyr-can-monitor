@@ -39,8 +39,8 @@ ZTEST(logger_format, test_id_formatted_correctly)
 
 	format_into(buf, sizeof(buf), 0x1A2, 0, NULL, 0LL);
 
-	zassert_not_null(strstr(buf, "ID:0x1A2"),
-			 "ID token 'ID:0x1A2' not found in: %s", buf);
+	zassert_not_null(strstr(buf, "ID=0x1A2"),
+			 "ID token 'ID=0x1A2' not found in: %s", buf);
 }
 
 ZTEST(logger_format, test_id_zero_formatted)
@@ -49,7 +49,7 @@ ZTEST(logger_format, test_id_zero_formatted)
 
 	format_into(buf, sizeof(buf), 0x000, 0, NULL, 0LL);
 
-	zassert_not_null(strstr(buf, "ID:0x000"),
+	zassert_not_null(strstr(buf, "ID=0x000"),
 			 "Zero ID not found in: %s", buf);
 }
 
@@ -59,8 +59,8 @@ ZTEST(logger_format, test_dlc_present)
 
 	format_into(buf, sizeof(buf), 0x001, 8, NULL, 0LL);
 
-	zassert_not_null(strstr(buf, "DLC:8"),
-			 "DLC token 'DLC:8' not found in: %s", buf);
+	zassert_not_null(strstr(buf, "DLC=8"),
+			 "DLC token 'DLC=8' not found in: %s", buf);
 }
 
 ZTEST(logger_format, test_dlc_zero_no_data_bytes)
@@ -69,12 +69,12 @@ ZTEST(logger_format, test_dlc_zero_no_data_bytes)
 
 	format_into(buf, sizeof(buf), 0x001, 0, NULL, 0LL);
 
-	zassert_not_null(strstr(buf, "DLC:0"),
-			 "DLC:0 not found in: %s", buf);
-	zassert_not_null(strstr(buf, "Data:"),
-			 "'Data:' token not found in: %s", buf);
+	zassert_not_null(strstr(buf, "DLC=0"),
+			 "DLC=0 not found in: %s", buf);
+	zassert_not_null(strstr(buf, "DATA="),
+			 "'DATA=' token not found in: %s", buf);
 
-	const char *data_pos = strstr(buf, "Data:");
+	const char *data_pos = strstr(buf, "DATA=");
 
 	zassert_equal(*(data_pos + 5), '\0',
 		      "No bytes expected after 'Data:' with DLC=0, got: %s",
@@ -101,8 +101,8 @@ ZTEST(logger_format, test_full_8_byte_frame)
 	format_into(buf, sizeof(buf), 0x7FF, 8, data, 42LL);
 
 	zassert_not_null(strstr(buf, "[42]"),       "timestamp: %s", buf);
-	zassert_not_null(strstr(buf, "ID:0x7FF"),   "id: %s", buf);
-	zassert_not_null(strstr(buf, "DLC:8"),      "dlc: %s", buf);
+	zassert_not_null(strstr(buf, "ID=0x7FF"),   "id: %s", buf);
+	zassert_not_null(strstr(buf, "DLC=8"),      "dlc: %s", buf);
 	zassert_not_null(strstr(buf, "00 11 22 33 44 55 66 77"),
 			 "data bytes: %s", buf);
 }
